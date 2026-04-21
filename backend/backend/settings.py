@@ -1,4 +1,6 @@
 from pathlib import Path
+import os
+import dj_database_url
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -7,7 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 SECRET_KEY = 'django-insecure-vhrn!g7=+4=&ib@=z3nsx=5-mo_ju(r)f$51+6nx45n@1bt=1z'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
@@ -34,6 +37,8 @@ INSTALLED_APPS = [
 # MIDDLEWARE
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',   # ✅ Added
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,7 +57,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],   # ✅ Updated
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,18 +74,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 
-# ✅ MYSQL DATABASE CONFIG
+# DATABASE (CloudClever MySQL/PostgreSQL auto-detect)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'taskmanager',
-        'USER': 'root',
-        'PASSWORD': 'Surya@5566',  # 🔥 change this
-        'HOST': 'localhost',
+        'NAME': 'b8w7eosxbilgwa6kep8c',
+        'USER': 'uhglq3j4vciz5tus',
+        'PASSWORD': 'ApZQ8sTQwOfjZ7cjS2SO',
+        'HOST': 'b8w7eosxbilgwa6kep8c-mysql.services.clever-cloud.com',
         'PORT': '3306',
     }
 }
-
 
 # PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
@@ -101,13 +105,17 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # INTERNATIONALIZATION
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Kolkata'   # ✅ updated
+TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 
 
 # STATIC FILES
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# WhiteNoise static handling
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # DEFAULT PRIMARY KEY
