@@ -1,13 +1,17 @@
 from pathlib import Path
 import os
 import dj_database_url
+from dotenv import load_dotenv
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
 
 # SECURITY
-SECRET_KEY = 'django-insecure-vhrn!g7=+4=&ib@=z3nsx=5-mo_ju(r)f$51+6nx45n@1bt=1z'
+SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
@@ -74,15 +78,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 
-# DATABASE (CloudClever MySQL/PostgreSQL auto-detect)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'b8w7eosxbilgwa6kep8c',
-        'USER': 'uhglq3j4vciz5tus',
-        'PASSWORD': 'ApZQ8sTQwOfjZ7cjS2SO',
-        'HOST': 'b8w7eosxbilgwa6kep8c-mysql.services.clever-cloud.com',
-        'PORT': '3306',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+        'OPTIONS': {
+            'ssl': {'ssl-mode': 'REQUIRED'}
+        }
     }
 }
 
