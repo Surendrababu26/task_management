@@ -75,7 +75,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'taskmanager',
         'USER': 'root',
-        'PASSWORD': 'your_password',  # 🔥 change this
+        'PASSWORD': 'Surya@5566',  # 🔥 change this
         'HOST': 'localhost',
         'PORT': '3306',
     }
