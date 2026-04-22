@@ -1,11 +1,7 @@
 from pathlib import Path
 import os
 import dj_database_url
-import pymysql  # ✅ Added for Render/MySQL
 from dotenv import load_dotenv
-
-# Install pymysql as MySQLdb
-pymysql.install_as_MySQLdb()
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
