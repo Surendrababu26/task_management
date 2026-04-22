@@ -5,7 +5,7 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
 
-  const API = "http://127.0.0.1:8000/api/tasks/";
+  const API = import.meta.env.VITE_API_URL;
 
   //  Fetch Tasks (with error handling) 
   const fetchTasks = async () => {
