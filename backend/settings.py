@@ -3,6 +3,7 @@ import os
 import dj_database_url
 from dotenv import load_dotenv
 
+
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -79,10 +80,22 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 
 # DATABASES
-# Use Clever Cloud MySQL variables if available, else fallback to generic DB vars or SQLite
-if os.getenv('MYSQL_ADDON_HOST'):
-    DATABASES = {
-        'default': {
+# Priority 1: DATABASE_URL (Render/Standard)
+# Priority 2: Clever Cloud MySQL variables
+# Priority 3: Fallback defaults
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', ''),
+        conn_max_age=600,
+        ssl_require=True if os.getenv('DATABASE_URL') else False
+    )
+}
+
+# If DATABASE_URL was not found or failed, try Clever Cloud variables
+if not DATABASES['default'] or not DATABASES['default'].get('NAME'):
+    if os.getenv('MYSQL_ADDON_HOST'):
+        DATABASES['default'] = {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': os.getenv('MYSQL_ADDON_DB'),
             'USER': os.getenv('MYSQL_ADDON_USER'),
@@ -93,10 +106,9 @@ if os.getenv('MYSQL_ADDON_HOST'):
                 'ssl': {'ssl-mode': 'REQUIRED'}
             }
         }
-    }
-else:
-    DATABASES = {
-        'default': {
+    else:
+        # Final fallback for local development
+        DATABASES['default'] = {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': os.getenv('DB_NAME', 'db_name'),
             'USER': os.getenv('DB_USER', 'db_user'),
@@ -104,12 +116,10 @@ else:
             'HOST': os.getenv('DB_HOST', 'localhost'),
             'PORT': os.getenv('DB_PORT', '3306'),
         }
-    }
 
-# Fallback to dj_database_url if DATABASE_URL is set (Render often uses this)
-db_from_env = dj_database_url.config(conn_max_age=600)
-if db_from_env:
-    DATABASES['default'].update(db_from_env)
+# Ensure ENGINE is always set for mysql if not already (dj-database-url handles this but just in case)
+if 'mysql' in DATABASES['default'].get('ENGINE', ''):
+     DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
 
 # PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
