@@ -1,7 +1,11 @@
 from pathlib import Path
 import os
 import dj_database_url
+import pymysql  # ✅ Added for Render/MySQL
 from dotenv import load_dotenv
+
+# Install pymysql as MySQLdb
+pymysql.install_as_MySQLdb()
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,8 +16,8 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # SECURITY
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 
 # CORS
@@ -78,19 +82,38 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-        'OPTIONS': {
-            'ssl': {'ssl-mode': 'REQUIRED'}
+# DATABASES
+# Use Clever Cloud MySQL variables if available, else fallback to generic DB vars or SQLite
+if os.getenv('MYSQL_ADDON_HOST'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('MYSQL_ADDON_DB'),
+            'USER': os.getenv('MYSQL_ADDON_USER'),
+            'PASSWORD': os.getenv('MYSQL_ADDON_PASSWORD'),
+            'HOST': os.getenv('MYSQL_ADDON_HOST'),
+            'PORT': os.getenv('MYSQL_ADDON_PORT'),
+            'OPTIONS': {
+                'ssl': {'ssl-mode': 'REQUIRED'}
+            }
         }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('DB_NAME', 'db_name'),
+            'USER': os.getenv('DB_USER', 'db_user'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '3306'),
+        }
+    }
+
+# Fallback to dj_database_url if DATABASE_URL is set (Render often uses this)
+db_from_env = dj_database_url.config(conn_max_age=600)
+if db_from_env:
+    DATABASES['default'].update(db_from_env)
 
 # PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
@@ -126,3 +149,13 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # DEFAULT PRIMARY KEY
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Render-specific security settings
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # SECURE_HSTS_SECONDS = 31536000
+    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # SECURE_HSTS_PRELOAD = True
